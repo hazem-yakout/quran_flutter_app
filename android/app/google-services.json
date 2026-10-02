@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "409434141367",
+    "project_id": "quran-16c57",
+    "storage_bucket": "quran-16c57.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:409434141367:android:36bdf9f74defaf2d411332",
+        "android_client_info": {
+          "package_name": "com.example.quran"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "409434141367-a4ovb7a10i6gf0etbtg2csl16i2c0cv3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.quran",
+            "certificate_hash": "360a0e9293328678c1426cc9b84c806e5b23d1a8"
+          }
+        },
+        {
+          "client_id": "409434141367-3csi60hvfs11k84efc3sebd1eug5jj3r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAmBhfbhvHa1532BfsxU9Yge8crGAUtJGQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "409434141367-3csi60hvfs11k84efc3sebd1eug5jj3r.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "409434141367-r7njivhg5p918ffosn5ocpp0o6gv8524.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.quran"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
