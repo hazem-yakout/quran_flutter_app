@@ -5,9 +5,17 @@ import 'package:get_storage/get_storage.dart';
 import 'package:just_audio/just_audio.dart';
 
 import 'package:quran/presentation/root/pages/profile.dart';
+import 'package:quran/presentation/choose_reciter/pages/choose_reciter.dart';
 
 class Root extends StatefulWidget {
-  const Root({super.key});
+  final String reciterName;
+  final String reciterServer;
+
+  const Root({
+    super.key,
+    required this.reciterName,
+    required this.reciterServer,
+  });
 
   @override
   State<Root> createState() => _RootState();
@@ -163,6 +171,10 @@ class _RootState extends State<Root> {
         });
   }
 
+  // =========================
+  // LOAD DATA
+  // =========================
+
   void loadData() {
     final List<dynamic> savedFavorites =
         storage.read('favorites') ?? [];
@@ -177,6 +189,19 @@ class _RootState extends State<Root> {
     recentlyPlayed = savedRecentlyPlayed
         .map((e) => int.parse(e.toString()))
         .toList();
+  }
+
+  // =========================
+  // CHANGE RECITER
+  // =========================
+
+  void goToChooseReciter() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const ChooseReciterPage(),
+      ),
+    );
   }
 
   // =========================
@@ -204,9 +229,8 @@ class _RootState extends State<Root> {
       final String number =
       surahNumber.toString().padLeft(3, '0');
 
-      // Mahmoud Khalil Al-Hussary
       await audioPlayer.setUrl(
-        'https://server13.mp3quran.net/husr/$number.mp3',
+        '${widget.reciterServer}$number.mp3',
       );
 
       await audioPlayer.setVolume(volume);
@@ -272,7 +296,8 @@ class _RootState extends State<Root> {
       return;
     }
 
-    final int nextSurah = currentSurah + 1;
+    final int nextSurah =
+        currentSurah + 1;
 
     await playSurah(nextSurah);
   }
@@ -293,7 +318,8 @@ class _RootState extends State<Root> {
 
   Future<void> increaseVolume() async {
     setState(() {
-      volume = (volume + 0.1).clamp(0.0, 1.0);
+      volume =
+          (volume + 0.1).clamp(0.0, 1.0);
     });
 
     await audioPlayer.setVolume(volume);
@@ -305,7 +331,8 @@ class _RootState extends State<Root> {
 
   Future<void> decreaseVolume() async {
     setState(() {
-      volume = (volume - 0.1).clamp(0.0, 1.0);
+      volume =
+          (volume - 0.1).clamp(0.0, 1.0);
     });
 
     await audioPlayer.setVolume(volume);
@@ -336,7 +363,9 @@ class _RootState extends State<Root> {
   // FORMAT TIME
   // =========================
 
-  String formatDuration(Duration duration) {
+  String formatDuration(
+      Duration duration,
+      ) {
     final String minutes = duration.inMinutes
         .remainder(60)
         .toString()
@@ -348,8 +377,9 @@ class _RootState extends State<Root> {
         .padLeft(2, '0');
 
     if (duration.inHours > 0) {
-      final String hours =
-      duration.inHours.toString().padLeft(2, '0');
+      final String hours = duration.inHours
+          .toString()
+          .padLeft(2, '0');
 
       return '$hours:$minutes:$seconds';
     }
@@ -368,7 +398,8 @@ class _RootState extends State<Root> {
   @override
   Widget build(BuildContext context) {
     final bool isDark =
-        Theme.of(context).brightness == Brightness.dark;
+        Theme.of(context).brightness ==
+            Brightness.dark;
 
     final bool isFavorite =
     favorites.contains(currentSurah);
@@ -384,7 +415,6 @@ class _RootState extends State<Root> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         foregroundColor: Colors.white,
-
         centerTitle: true,
 
         title: const Text(
@@ -396,6 +426,24 @@ class _RootState extends State<Root> {
         ),
 
         actions: [
+          // =========================
+          // CHANGE RECITER
+          // =========================
+
+          IconButton(
+            onPressed: goToChooseReciter,
+            tooltip: 'Change Reciter',
+
+            icon: const Icon(
+              Icons.record_voice_over_outlined,
+              size: 27,
+            ),
+          ),
+
+          // =========================
+          // PROFILE
+          // =========================
+
           IconButton(
             onPressed: () async {
               await Navigator.push(
@@ -409,6 +457,7 @@ class _RootState extends State<Root> {
                 loadData();
               });
             },
+
             icon: const Icon(
               Icons.person_outline,
               size: 29,
@@ -424,6 +473,7 @@ class _RootState extends State<Root> {
       body: Stack(
         children: [
           // BACKGROUND
+
           Positioned.fill(
             child: Image.asset(
               'assets/images/ka3ba.webp',
@@ -432,6 +482,7 @@ class _RootState extends State<Root> {
           ),
 
           // DARK OVERLAY
+
           Positioned.fill(
             child: Container(
               color: Colors.black.withOpacity(
@@ -450,11 +501,13 @@ class _RootState extends State<Root> {
                 // =========================
 
                 Container(
-                  margin: const EdgeInsets.symmetric(
+                  margin:
+                  const EdgeInsets.symmetric(
                     horizontal: 15,
                   ),
 
-                  padding: const EdgeInsets.symmetric(
+                  padding:
+                  const EdgeInsets.symmetric(
                     horizontal: 15,
                     vertical: 12,
                   ),
@@ -468,8 +521,8 @@ class _RootState extends State<Root> {
                     BorderRadius.circular(20),
 
                     border: Border.all(
-                      color:
-                      Colors.white.withOpacity(0.25),
+                      color: Colors.white
+                          .withOpacity(0.25),
                     ),
                   ),
 
@@ -498,12 +551,15 @@ class _RootState extends State<Root> {
                             ),
                           ),
 
-                          const SizedBox(width: 15),
+                          const SizedBox(
+                            width: 15,
+                          ),
 
                           Expanded(
                             child: Column(
                               crossAxisAlignment:
                               CrossAxisAlignment.end,
+
                               children: [
                                 Text(
                                   surahNames[
@@ -522,10 +578,12 @@ class _RootState extends State<Root> {
                                   ),
                                 ),
 
-                                const SizedBox(height: 2),
+                                const SizedBox(
+                                  height: 2,
+                                ),
 
                                 Text(
-                                  'الشيخ محمود خليل الحصري',
+                                  widget.reciterName,
 
                                   textDirection:
                                   TextDirection.rtl,
@@ -573,7 +631,8 @@ class _RootState extends State<Root> {
                                   positionSnapshot.data ??
                                       Duration.zero;
 
-                              if (position > duration) {
+                              if (position >
+                                  duration) {
                                 position = duration;
                               }
 
@@ -586,7 +645,8 @@ class _RootState extends State<Root> {
                                   : 1.0;
 
                               final double value =
-                              position.inMilliseconds
+                              position
+                                  .inMilliseconds
                                   .toDouble()
                                   .clamp(
                                 0.0,
@@ -601,16 +661,20 @@ class _RootState extends State<Root> {
                                       context,
                                     ).copyWith(
                                       trackHeight: 4,
+
                                       activeTrackColor:
                                       Colors.green,
+
                                       inactiveTrackColor:
                                       isDark
                                           ? Colors
                                           .white24
                                           : Colors
                                           .black12,
+
                                       thumbColor:
                                       Colors.green,
+
                                       thumbShape:
                                       const RoundSliderThumbShape(
                                         enabledThumbRadius:
@@ -635,8 +699,7 @@ class _RootState extends State<Root> {
                                             .seek(
                                           Duration(
                                             milliseconds:
-                                            value
-                                                .toInt(),
+                                            value.toInt(),
                                           ),
                                         );
                                       },
@@ -653,11 +716,14 @@ class _RootState extends State<Root> {
                                         formatDuration(
                                           position,
                                         ),
+
                                         style: TextStyle(
                                           fontSize: 11,
                                           color: isDark
-                                              ? Colors.white70
-                                              : Colors.black54,
+                                              ? Colors
+                                              .white70
+                                              : Colors
+                                              .black54,
                                         ),
                                       ),
 
@@ -665,11 +731,14 @@ class _RootState extends State<Root> {
                                         formatDuration(
                                           duration,
                                         ),
+
                                         style: TextStyle(
                                           fontSize: 11,
                                           color: isDark
-                                              ? Colors.white70
-                                              : Colors.black54,
+                                              ? Colors
+                                              .white70
+                                              : Colors
+                                              .black54,
                                         ),
                                       ),
                                     ],
@@ -693,6 +762,7 @@ class _RootState extends State<Root> {
 
                         children: [
                           // VOLUME DOWN
+
                           Column(
                             children: [
                               IconButton(
@@ -722,7 +792,8 @@ class _RootState extends State<Root> {
 
                           const SizedBox(width: 8),
 
-                          // stop
+                          // STOP
+
                           Column(
                             children: [
                               Container(
@@ -743,13 +814,16 @@ class _RootState extends State<Root> {
 
                                   icon: const Icon(
                                     Icons.stop_rounded,
-                                    color: Colors.white,
+                                    color:
+                                    Colors.white,
                                     size: 28,
                                   ),
                                 ),
                               ),
 
-                              const SizedBox(height: 2),
+                              const SizedBox(
+                                height: 2,
+                              ),
 
                               Text(
                                 'RESET',
@@ -768,6 +842,7 @@ class _RootState extends State<Root> {
                           const SizedBox(width: 12),
 
                           // PLAY / PAUSE
+
                           Column(
                             children: [
                               StreamBuilder<PlayerState>(
@@ -789,7 +864,8 @@ class _RootState extends State<Root> {
 
                                     decoration:
                                     const BoxDecoration(
-                                      color: Colors.green,
+                                      color:
+                                      Colors.green,
                                       shape:
                                       BoxShape.circle,
                                     ),
@@ -815,7 +891,9 @@ class _RootState extends State<Root> {
                                 },
                               ),
 
-                              const SizedBox(height: 2),
+                              const SizedBox(
+                                height: 2,
+                              ),
 
                               Text(
                                 'PLAY',
@@ -834,6 +912,7 @@ class _RootState extends State<Root> {
                           const SizedBox(width: 12),
 
                           // VOLUME UP
+
                           Column(
                             children: [
                               IconButton(
@@ -864,6 +943,7 @@ class _RootState extends State<Root> {
                           const SizedBox(width: 5),
 
                           // FAVORITE
+
                           IconButton(
                             onPressed: () {
                               toggleFavorite(
@@ -898,9 +978,11 @@ class _RootState extends State<Root> {
 
                       Text(
                         'Volume ${(volume * 100).round()}%',
+
                         style: TextStyle(
                           fontSize: 12,
-                          fontWeight: FontWeight.bold,
+                          fontWeight:
+                          FontWeight.bold,
                           color: isDark
                               ? Colors.white
                               : Colors.black87,
@@ -918,12 +1000,14 @@ class _RootState extends State<Root> {
 
                         child: Container(
                           padding:
-                          const EdgeInsets.symmetric(
+                          const EdgeInsets
+                              .symmetric(
                             horizontal: 15,
                             vertical: 7,
                           ),
 
-                          decoration: BoxDecoration(
+                          decoration:
+                          BoxDecoration(
                             color: autoPlay
                                 ? Colors.green
                                 : isDark
@@ -954,7 +1038,9 @@ class _RootState extends State<Root> {
                                     : Colors.black87,
                               ),
 
-                              const SizedBox(width: 6),
+                              const SizedBox(
+                                width: 6,
+                              ),
 
                               Text(
                                 autoPlay
@@ -994,14 +1080,17 @@ class _RootState extends State<Root> {
 
                   child: Row(
                     mainAxisAlignment:
-                    MainAxisAlignment.spaceBetween,
+                    MainAxisAlignment
+                        .spaceBetween,
 
                     children: [
                       const Text(
                         'Surahs',
+
                         style: TextStyle(
                           fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                          fontWeight:
+                          FontWeight.bold,
                           color: Colors.white,
                           shadows: [
                             Shadow(
@@ -1014,6 +1103,7 @@ class _RootState extends State<Root> {
 
                       const Text(
                         '114 Surahs',
+
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.white,
@@ -1066,15 +1156,16 @@ class _RootState extends State<Root> {
                         decoration: BoxDecoration(
                           color: isCurrent
                               ? Colors.green
-                              .withOpacity(
-                              0.78)
+                              .withOpacity(0.78)
                               : isDark
                               ? Colors.black
                               .withOpacity(
-                              0.40)
+                            0.40,
+                          )
                               : Colors.white
                               .withOpacity(
-                              0.70),
+                            0.70,
+                          ),
 
                           borderRadius:
                           BorderRadius.circular(
@@ -1112,7 +1203,8 @@ class _RootState extends State<Root> {
                                     ? Colors.white
                                     : isDark
                                     ? Colors.white
-                                    : Colors.black87,
+                                    : Colors
+                                    .black87,
                               ),
                             ),
                           ),
@@ -1137,7 +1229,8 @@ class _RootState extends State<Root> {
                           ),
 
                           trailing: IconButton(
-                            padding: EdgeInsets.zero,
+                            padding:
+                            EdgeInsets.zero,
 
                             onPressed: () {
                               toggleFavorite(

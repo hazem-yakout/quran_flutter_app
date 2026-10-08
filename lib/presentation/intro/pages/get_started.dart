@@ -60,7 +60,7 @@ class GetStartedPage extends StatelessWidget {
                 const SizedBox(height: 21),
 
                 Text(
-                  'By Mahmoud khalil El-Hossary',
+                  'Choose your favorite reciter',
                   style: TextStyle(
                     fontWeight: FontWeight.w500,
                     color: AppColors.grey,
@@ -71,15 +71,19 @@ class GetStartedPage extends StatelessWidget {
                 const SizedBox(height: 21),
 
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                  ),
                   child: BasicAppButton(
                     onPressed: () {
                       pageController.nextPage(
-                        duration: const Duration(milliseconds: 500),
+                        duration: const Duration(
+                          milliseconds: 500,
+                        ),
                         curve: Curves.easeInOut,
                       );
                     },
-                    title: "Get Started",
+                    title: 'Get Started',
                   ),
                 ),
 

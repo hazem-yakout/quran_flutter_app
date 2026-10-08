@@ -27,15 +27,18 @@ class _IntroPagesState extends State<IntroPages> {
         children: [
           PageView(
             controller: pageController,
+
             onPageChanged: (index) {
               setState(() {
                 currentPage = index;
               });
             },
+
             children: [
               GetStartedPage(
                 pageController: pageController,
               ),
+
               ChooseMode(
                 pageController: pageController,
               ),
@@ -50,29 +53,33 @@ class _IntroPagesState extends State<IntroPages> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  width: currentPage == 0 ? 30 : 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                _buildIndicator(
+                  isActive: currentPage == 0,
                 ),
 
                 const SizedBox(width: 8),
 
-                Container(
-                  width: currentPage == 1 ? 30 : 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                _buildIndicator(
+                  isActive: currentPage == 1,
                 ),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildIndicator({
+    required bool isActive,
+  }) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      width: isActive ? 30 : 8,
+      height: 8,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
       ),
     );
   }
