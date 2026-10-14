@@ -49,7 +49,7 @@ class GetStartedPage extends StatelessWidget {
                 const Spacer(),
 
                 const Text(
-                  'Enjoy Listening to El-Quran EL-Kareem',
+                  'Enjoy Reading & Listening El-Quran EL-Kareem',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -60,7 +60,7 @@ class GetStartedPage extends StatelessWidget {
                 const SizedBox(height: 21),
 
                 Text(
-                  'Choose your favorite reciter',
+                  'By Hazem Yakout',
                   style: TextStyle(
                     fontWeight: FontWeight.w500,
                     color: AppColors.grey,
