@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:just_audio/just_audio.dart';
 
-import 'package:quran/presentation/mode/pages/choose_quran_mode.dart';
 import 'package:quran/presentation/root/pages/profile.dart';
 import 'package:quran/presentation/choose_reciter/pages/choose_reciter.dart';
 import 'package:quran/presentation/quran_reader/pages/quran_reader_page.dart';
@@ -43,29 +42,120 @@ class _RootState extends State<Root> {
   String? get userId => FirebaseAuth.instance.currentUser?.uid;
 
   final List<String> surahNames = [
-    'الفاتحة', 'البقرة', 'آل عمران', 'النساء', 'المائدة',
-    'الأنعام', 'الأعراف', 'الأنفال', 'التوبة', 'يونس',
-    'هود', 'يوسف', 'الرعد', 'إبراهيم', 'الحجر',
-    'النحل', 'الإسراء', 'الكهف', 'مريم', 'طه',
-    'الأنبياء', 'الحج', 'المؤمنون', 'النور', 'الفرقان',
-    'الشعراء', 'النمل', 'القصص', 'العنكبوت', 'الروم',
-    'لقمان', 'السجدة', 'الأحزاب', 'سبأ', 'فاطر',
-    'يس', 'الصافات', 'ص', 'الزمر', 'غافر',
-    'فصلت', 'الشورى', 'الزخرف', 'الدخان', 'الجاثية',
-    'الأحقاف', 'محمد', 'الفتح', 'الحجرات', 'ق',
-    'الذاريات', 'الطور', 'النجم', 'القمر', 'الرحمن',
-    'الواقعة', 'الحديد', 'المجادلة', 'الحشر', 'الممتحنة',
-    'الصف', 'الجمعة', 'المنافقون', 'التغابن', 'الطلاق',
-    'التحريم', 'الملك', 'القلم', 'الحاقة', 'المعارج',
-    'نوح', 'الجن', 'المزمل', 'المدثر', 'القيامة',
-    'الإنسان', 'المرسلات', 'النبأ', 'النازعات', 'عبس',
-    'التكوير', 'الانفطار', 'المطففين', 'الانشقاق', 'البروج',
-    'الطارق', 'الأعلى', 'الغاشية', 'الفجر', 'البلد',
-    'الشمس', 'الليل', 'الضحى', 'الشرح', 'التين',
-    'العلق', 'القدر', 'البينة', 'الزلزلة', 'العاديات',
-    'القارعة', 'التكاثر', 'العصر', 'الهمزة', 'الفيل',
-    'قريش', 'الماعون', 'الكوثر', 'الكافرون', 'النصر',
-    'المسد', 'الإخلاص', 'الفلق', 'الناس',
+    'الفاتحة',
+    'البقرة',
+    'آل عمران',
+    'النساء',
+    'المائدة',
+    'الأنعام',
+    'الأعراف',
+    'الأنفال',
+    'التوبة',
+    'يونس',
+    'هود',
+    'يوسف',
+    'الرعد',
+    'إبراهيم',
+    'الحجر',
+    'النحل',
+    'الإسراء',
+    'الكهف',
+    'مريم',
+    'طه',
+    'الأنبياء',
+    'الحج',
+    'المؤمنون',
+    'النور',
+    'الفرقان',
+    'الشعراء',
+    'النمل',
+    'القصص',
+    'العنكبوت',
+    'الروم',
+    'لقمان',
+    'السجدة',
+    'الأحزاب',
+    'سبأ',
+    'فاطر',
+    'يس',
+    'الصافات',
+    'ص',
+    'الزمر',
+    'غافر',
+    'فصلت',
+    'الشورى',
+    'الزخرف',
+    'الدخان',
+    'الجاثية',
+    'الأحقاف',
+    'محمد',
+    'الفتح',
+    'الحجرات',
+    'ق',
+    'الذاريات',
+    'الطور',
+    'النجم',
+    'القمر',
+    'الرحمن',
+    'الواقعة',
+    'الحديد',
+    'المجادلة',
+    'الحشر',
+    'الممتحنة',
+    'الصف',
+    'الجمعة',
+    'المنافقون',
+    'التغابن',
+    'الطلاق',
+    'التحريم',
+    'الملك',
+    'القلم',
+    'الحاقة',
+    'المعارج',
+    'نوح',
+    'الجن',
+    'المزمل',
+    'المدثر',
+    'القيامة',
+    'الإنسان',
+    'المرسلات',
+    'النبأ',
+    'النازعات',
+    'عبس',
+    'التكوير',
+    'الانفطار',
+    'المطففين',
+    'الانشقاق',
+    'البروج',
+    'الطارق',
+    'الأعلى',
+    'الغاشية',
+    'الفجر',
+    'البلد',
+    'الشمس',
+    'الليل',
+    'الضحى',
+    'الشرح',
+    'التين',
+    'العلق',
+    'القدر',
+    'البينة',
+    'الزلزلة',
+    'العاديات',
+    'القارعة',
+    'التكاثر',
+    'العصر',
+    'الهمزة',
+    'الفيل',
+    'قريش',
+    'الماعون',
+    'الكوثر',
+    'الكافرون',
+    'النصر',
+    'المسد',
+    'الإخلاص',
+    'الفلق',
+    'الناس',
   ];
 
   @override
@@ -142,8 +232,15 @@ class _RootState extends State<Root> {
         }
       }
 
-      await storage.write(favoritesKey, loadedFavorites.toList());
-      await storage.write(recentKey, loadedRecent);
+      await storage.write(
+        favoritesKey,
+        loadedFavorites.toList(),
+      );
+
+      await storage.write(
+        recentKey,
+        loadedRecent,
+      );
 
       await docRef.set({
         'favorites': loadedFavorites.toList(),
@@ -193,19 +290,6 @@ class _RootState extends State<Root> {
     } catch (e) {
       debugPrint('Error syncing user data: $e');
     }
-  }
-
-  // =========================
-  // BACK TO MODE SELECTION
-  // =========================
-
-  void goToChooseQuranMode() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const ChooseQuranModePage(),
-      ),
-    );
   }
 
   // =========================
@@ -369,7 +453,10 @@ class _RootState extends State<Root> {
         .padLeft(2, '0');
 
     if (duration.inHours > 0) {
-      final hours = duration.inHours.toString().padLeft(2, '0');
+      final hours = duration.inHours
+          .toString()
+          .padLeft(2, '0');
+
       return '$hours:$minutes:$seconds';
     }
 
@@ -396,16 +483,14 @@ class _RootState extends State<Root> {
 
     return Scaffold(
       extendBodyBehindAppBar: true,
-
-      // Back arrow replaces the swap button.
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         foregroundColor: Colors.white,
         centerTitle: true,
         leading: IconButton(
-          onPressed: goToChooseQuranMode,
-          tooltip: 'الرجوع لاختيار الوضع',
+          onPressed: goToChooseReciter,
+          tooltip: 'الرجوع لاختيار القارئ',
           icon: const Icon(
             Icons.arrow_back_rounded,
             size: 28,
@@ -461,7 +546,6 @@ class _RootState extends State<Root> {
           ),
         ],
       ),
-
       body: Stack(
         children: [
           Positioned.fill(
@@ -470,7 +554,6 @@ class _RootState extends State<Root> {
               fit: BoxFit.cover,
             ),
           ),
-
           Positioned.fill(
             child: Container(
               color: Colors.black.withOpacity(
@@ -478,18 +561,16 @@ class _RootState extends State<Root> {
               ),
             ),
           ),
-
           SafeArea(
             child: Column(
               children: [
                 const SizedBox(height: 5),
 
-                // =========================
                 // PLAYER
-                // =========================
-
                 Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 15),
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 15,
+                  ),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 15,
                     vertical: 12,
@@ -523,7 +604,8 @@ class _RootState extends State<Root> {
                           const SizedBox(width: 15),
                           Expanded(
                             child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
+                              crossAxisAlignment:
+                              CrossAxisAlignment.end,
                               children: [
                                 Text(
                                   surahNames[currentSurah - 1],
@@ -552,22 +634,22 @@ class _RootState extends State<Root> {
                           ),
                         ],
                       ),
-
                       const SizedBox(height: 4),
 
                       // SEEK SLIDER
-
                       StreamBuilder<Duration?>(
                         stream: audioPlayer.durationStream,
                         builder: (context, durationSnapshot) {
                           final duration =
-                              durationSnapshot.data ?? Duration.zero;
+                              durationSnapshot.data ??
+                                  Duration.zero;
 
                           return StreamBuilder<Duration>(
                             stream: audioPlayer.positionStream,
                             builder: (context, positionSnapshot) {
                               Duration position =
-                                  positionSnapshot.data ?? Duration.zero;
+                                  positionSnapshot.data ??
+                                      Duration.zero;
 
                               if (position > duration) {
                                 position = duration;
@@ -575,11 +657,12 @@ class _RootState extends State<Root> {
 
                               final double maxValue =
                               duration.inMilliseconds > 0
-                                  ? duration.inMilliseconds.toDouble()
+                                  ? duration.inMilliseconds
+                                  .toDouble()
                                   : 1.0;
 
-                              final double value = position
-                                  .inMilliseconds
+                              final double value =
+                              position.inMilliseconds
                                   .toDouble()
                                   .clamp(0.0, maxValue)
                                   .toDouble();
@@ -587,9 +670,11 @@ class _RootState extends State<Root> {
                               return Column(
                                 children: [
                                   SliderTheme(
-                                    data: SliderTheme.of(context).copyWith(
+                                    data: SliderTheme.of(context)
+                                        .copyWith(
                                       trackHeight: 4,
-                                      activeTrackColor: Colors.green,
+                                      activeTrackColor:
+                                      Colors.green,
                                       inactiveTrackColor: isDark
                                           ? Colors.white24
                                           : Colors.black12,
@@ -646,13 +731,12 @@ class _RootState extends State<Root> {
                           );
                         },
                       ),
-
                       const SizedBox(height: 2),
 
                       // PLAYER CONTROLS
-
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisAlignment:
+                        MainAxisAlignment.center,
                         children: [
                           Column(
                             children: [
@@ -675,9 +759,7 @@ class _RootState extends State<Root> {
                               ),
                             ],
                           ),
-
                           const SizedBox(width: 8),
-
                           Column(
                             children: [
                               Container(
@@ -709,21 +791,22 @@ class _RootState extends State<Root> {
                               ),
                             ],
                           ),
-
                           const SizedBox(width: 12),
-
                           Column(
                             children: [
                               StreamBuilder<PlayerState>(
-                                stream: audioPlayer.playerStateStream,
+                                stream:
+                                audioPlayer.playerStateStream,
                                 builder: (context, snapshot) {
                                   final playing =
-                                      snapshot.data?.playing ?? false;
+                                      snapshot.data?.playing ??
+                                          false;
 
                                   return Container(
                                     width: 62,
                                     height: 62,
-                                    decoration: const BoxDecoration(
+                                    decoration:
+                                    const BoxDecoration(
                                       color: Colors.green,
                                       shape: BoxShape.circle,
                                     ),
@@ -753,9 +836,7 @@ class _RootState extends State<Root> {
                               ),
                             ],
                           ),
-
                           const SizedBox(width: 12),
-
                           Column(
                             children: [
                               IconButton(
@@ -777,9 +858,7 @@ class _RootState extends State<Root> {
                               ),
                             ],
                           ),
-
                           const SizedBox(width: 5),
-
                           IconButton(
                             onPressed: () {
                               toggleFavorite(currentSurah);
@@ -798,22 +877,20 @@ class _RootState extends State<Root> {
                           ),
                         ],
                       ),
-
                       const SizedBox(height: 2),
-
                       Text(
                         'Volume ${(volume * 100).round()}%',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : Colors.black87,
+                          color: isDark
+                              ? Colors.white
+                              : Colors.black87,
                         ),
                       ),
-
                       const SizedBox(height: 5),
 
                       // AUTO PLAY
-
                       GestureDetector(
                         onTap: toggleAutoPlay,
                         child: Container(
@@ -827,7 +904,8 @@ class _RootState extends State<Root> {
                                 : isDark
                                 ? Colors.white12
                                 : Colors.black12,
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius:
+                            BorderRadius.circular(20),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -863,15 +941,16 @@ class _RootState extends State<Root> {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 10),
 
                 // SURAH HEADER
-
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 18),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                  ),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment:
+                    MainAxisAlignment.spaceBetween,
                     children: const [
                       Text(
                         'Surahs',
@@ -897,34 +976,40 @@ class _RootState extends State<Root> {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 5),
 
                 // SURAH LIST
-
                 Expanded(
                   child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                    ),
                     itemCount: surahNames.length,
                     itemBuilder: (context, index) {
                       final surahNumber = index + 1;
-                      final isFav = favorites.contains(surahNumber);
-                      final isCurrent = currentSurah == surahNumber;
+                      final isFav =
+                      favorites.contains(surahNumber);
+                      final isCurrent =
+                          currentSurah == surahNumber;
 
                       return Container(
                         height: 55,
-                        margin: const EdgeInsets.only(bottom: 4),
+                        margin: const EdgeInsets.only(
+                          bottom: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: isCurrent
                               ? Colors.green.withOpacity(0.78)
                               : isDark
                               ? Colors.black.withOpacity(0.40)
                               : Colors.white.withOpacity(0.70),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius:
+                          BorderRadius.circular(12),
                         ),
                         child: ListTile(
                           dense: true,
-                          contentPadding: const EdgeInsets.symmetric(
+                          contentPadding:
+                          const EdgeInsets.symmetric(
                             horizontal: 12,
                           ),
                           leading: CircleAvatar(

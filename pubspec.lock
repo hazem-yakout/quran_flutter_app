@@ -305,10 +305,9 @@ packages:
   flutter_quran:
     dependency: "direct main"
     description:
-      name: flutter_quran
-      sha256: af8880e31292442635802295281cbd91cc91795fed3d79778f3feeb2404a343f
-      url: "https://pub.dev"
-    source: hosted
+      path: "packages/flutter_quran"
+      relative: true
+    source: path
     version: "0.0.5"
   flutter_secure_storage:
     dependency: transitive

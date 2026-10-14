@@ -1,3 +1,4 @@
+
 name: quran
 description: "A new Flutter project."
 
@@ -61,3 +62,7 @@ flutter:
           weight: 400
         - asset: assets/fonts/Satoshi-Light.ttf
           weight: 300
+
+dependency_overrides:
+  flutter_quran:
+    path: packages/flutter_quran

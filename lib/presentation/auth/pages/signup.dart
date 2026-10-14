@@ -23,11 +23,11 @@ final emailController = TextEditingController();
 final passwordController = TextEditingController();
 final confirmPasswordController = TextEditingController();
 
+final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+
 bool isLoading = false;
 bool obscurePassword = true;
 bool obscureConfirmPassword = true;
-
-final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
 
 @override
 void dispose() {
@@ -47,6 +47,13 @@ builder: (context) => const ChooseQuranModePage(),
 );
 }
 
+void showMessage(String message) {
+ScaffoldMessenger.of(context).showSnackBar(
+SnackBar(content: Text(message)),
+);
+}
+
+// Sign up with Email and Password
 Future<void> signup() async {
 final fullname = fullnameController.text.trim();
 final email = emailController.text.trim();
@@ -57,26 +64,21 @@ if (fullname.isEmpty ||
 email.isEmpty ||
 password.isEmpty ||
 confirmPassword.isEmpty) {
-ScaffoldMessenger.of(context).showSnackBar(
-const SnackBar(
-content: Text('Please fill all fields'),
-),
-);
+showMessage('Please fill all fields');
+return;
+}
+
+if (password.length < 6) {
+showMessage('Password must be at least 6 characters');
 return;
 }
 
 if (password != confirmPassword) {
-ScaffoldMessenger.of(context).showSnackBar(
-const SnackBar(
-content: Text('Passwords do not match'),
-),
-);
+showMessage('Passwords do not match');
 return;
 }
 
-setState(() {
-isLoading = true;
-});
+setState(() => isLoading = true);
 
 try {
 final result = await sl<SignupUser>()(
@@ -89,17 +91,9 @@ password: password,
 
 if (!mounted) return;
 
-setState(() {
-isLoading = false;
-});
-
 result.fold(
 (error) {
-ScaffoldMessenger.of(context).showSnackBar(
-SnackBar(
-content: Text(error.toString()),
-),
-);
+showMessage(error.toString());
 },
 (message) {
 goToChooseQuranMode();
@@ -107,23 +101,18 @@ goToChooseQuranMode();
 );
 } catch (e) {
 if (!mounted) return;
-
-setState(() {
-isLoading = false;
-});
-
-ScaffoldMessenger.of(context).showSnackBar(
-SnackBar(
-content: Text(e.toString()),
-),
-);
+showMessage('Sign up failed: $e');
+} finally {
+if (mounted) {
+setState(() => isLoading = false);
+}
 }
 }
 
+// Sign in with Google.
+// If an account is already signed in, link Google to that account.
 Future<void> signUpWithGoogle() async {
-setState(() {
-isLoading = true;
-});
+setState(() => isLoading = true);
 
 try {
 final GoogleSignIn googleSignIn = GoogleSignIn.instance;
@@ -140,66 +129,155 @@ final credential = GoogleAuthProvider.credential(
 idToken: googleAuth.idToken,
 );
 
-final userCredential =
+final currentUser = firebaseAuth.currentUser;
+late final UserCredential userCredential;
+
+if (currentUser != null) {
+// Link Google to the currently signed-in account.
+userCredential =
+await currentUser.linkWithCredential(credential);
+} else {
+// No signed-in user: sign in with Google normally.
+userCredential =
 await firebaseAuth.signInWithCredential(credential);
+}
 
 final fullname = fullnameController.text.trim();
 
 if (fullname.isNotEmpty &&
-userCredential.user?.displayName == null) {
+(userCredential.user?.displayName == null ||
+userCredential.user!.displayName!.isEmpty)) {
 await userCredential.user?.updateDisplayName(fullname);
 }
 
 if (!mounted) return;
 
-setState(() {
-isLoading = false;
-});
-
 goToChooseQuranMode();
-} catch (e) {
+} on FirebaseAuthException catch (e) {
 if (!mounted) return;
 
-setState(() {
-isLoading = false;
-});
+String message;
 
-ScaffoldMessenger.of(context).showSnackBar(
-SnackBar(
-content: Text('Google Sign Up failed: $e'),
-),
+switch (e.code) {
+case 'credential-already-in-use':
+message =
+'This Google account is already linked to another account.';
+break;
+case 'provider-already-linked':
+message = 'Google is already linked to this account.';
+break;
+case 'account-exists-with-different-credential':
+message =
+'An account already exists with this email. Sign in using its original method first.';
+break;
+case 'requires-recent-login':
+message = 'Please sign in again and retry.';
+break;
+default:
+message = 'Google authentication failed: '
+'${e.message ?? e.code}';
+}
+
+showMessage(message);
+} catch (e) {
+if (!mounted) return;
+showMessage('Google Sign Up failed: $e');
+} finally {
+if (mounted) {
+setState(() => isLoading = false);
+}
+}
+}
+
+// Add Email and Password to the currently signed-in Google account.
+Future<void> addPasswordToGoogleAccount() async {
+final user = firebaseAuth.currentUser;
+
+if (user == null || user.email == null) {
+showMessage('Please sign in with Google first.');
+return;
+}
+
+final alreadyLinked = user.providerData.any(
+(provider) => provider.providerId == 'password',
 );
+
+if (alreadyLinked) {
+showMessage('Email and password are already linked.');
+return;
+}
+
+final password = passwordController.text;
+
+if (password.length < 6) {
+showMessage('Enter a password of at least 6 characters.');
+return;
+}
+
+setState(() => isLoading = true);
+
+try {
+final credential = EmailAuthProvider.credential(
+email: user.email!,
+password: password,
+);
+
+await user.linkWithCredential(credential);
+
+if (!mounted) return;
+
+showMessage('Password linked successfully!');
+} on FirebaseAuthException catch (e) {
+if (!mounted) return;
+
+String message;
+
+switch (e.code) {
+case 'provider-already-linked':
+message = 'Email and password are already linked.';
+break;
+case 'email-already-in-use':
+case 'credential-already-in-use':
+message =
+'This email/password credential is already used by another account.';
+break;
+case 'weak-password':
+message = 'Please choose a stronger password.';
+break;
+case 'requires-recent-login':
+message = 'Please sign in again and retry.';
+break;
+default:
+message = 'Failed to link password: '
+'${e.message ?? e.code}';
+}
+
+showMessage(message);
+} catch (e) {
+if (!mounted) return;
+showMessage('Failed to link password: $e');
+} finally {
+if (mounted) {
+setState(() => isLoading = false);
+}
 }
 }
 
+// Sign in with Facebook
 Future<void> signUpWithFacebook() async {
-setState(() {
-isLoading = true;
-});
+setState(() => isLoading = true);
 
 try {
 final LoginResult result = await FacebookAuth.instance.login(
-permissions: [
-'email',
-'public_profile',
-],
-loginTracking: LoginTracking.enabled,
+permissions: ['email', 'public_profile'],
 );
 
 if (result.status != LoginStatus.success ||
 result.accessToken == null) {
 if (!mounted) return;
 
-setState(() {
-isLoading = false;
-});
-
-ScaffoldMessenger.of(context).showSnackBar(
-SnackBar(
-content: Text(
+showMessage(
 result.message ?? 'Facebook Sign Up cancelled',
-),
-),
 );
 return;
 }
@@ -208,35 +286,40 @@ final credential = FacebookAuthProvider.credential(
 result.accessToken!.tokenString,
 );
 
-final userCredential =
+final currentUser = firebaseAuth.currentUser;
+late final UserCredential userCredential;
+
+if (currentUser != null) {
+userCredential =
+await currentUser.linkWithCredential(credential);
+} else {
+userCredential =
 await firebaseAuth.signInWithCredential(credential);
+}
 
 final fullname = fullnameController.text.trim();
 
 if (fullname.isNotEmpty &&
-userCredential.user?.displayName == null) {
+(userCredential.user?.displayName == null ||
+userCredential.user!.displayName!.isEmpty)) {
 await userCredential.user?.updateDisplayName(fullname);
 }
 
 if (!mounted) return;
 
-setState(() {
-isLoading = false;
-});
-
 goToChooseQuranMode();
+} on FirebaseAuthException catch (e) {
+if (!mounted) return;
+showMessage(
+'Facebook authentication failed: ${e.message ?? e.code}',
+);
 } catch (e) {
 if (!mounted) return;
-
-setState(() {
-isLoading = false;
-});
-
-ScaffoldMessenger.of(context).showSnackBar(
-SnackBar(
-content: Text('Facebook Sign Up failed: $e'),
-),
-);
+showMessage('Facebook Sign Up failed: $e');
+} finally {
+if (mounted) {
+setState(() => isLoading = false);
+}
 }
 }
 
@@ -281,6 +364,8 @@ fontSize: 16,
 ),
 ),
 const SizedBox(height: 35),
+
+// Full name
 TextField(
 controller: fullnameController,
 textCapitalization: TextCapitalization.words,
@@ -294,6 +379,8 @@ borderRadius: BorderRadius.circular(12),
 ),
 ),
 const SizedBox(height: 20),
+
+// Email
 TextField(
 controller: emailController,
 keyboardType: TextInputType.emailAddress,
@@ -307,6 +394,8 @@ borderRadius: BorderRadius.circular(12),
 ),
 ),
 const SizedBox(height: 20),
+
+// Password
 TextField(
 controller: passwordController,
 obscureText: obscurePassword,
@@ -332,6 +421,8 @@ borderRadius: BorderRadius.circular(12),
 ),
 ),
 const SizedBox(height: 20),
+
+// Confirm password
 TextField(
 controller: confirmPasswordController,
 obscureText: obscureConfirmPassword,
@@ -358,6 +449,8 @@ borderRadius: BorderRadius.circular(12),
 ),
 ),
 const SizedBox(height: 25),
+
+// Create account
 SizedBox(
 width: double.infinity,
 height: 55,
@@ -373,6 +466,7 @@ child: CircularProgressIndicator(),
 ),
 ),
 const SizedBox(height: 25),
+
 const Row(
 children: [
 Expanded(child: Divider()),
@@ -384,6 +478,8 @@ Expanded(child: Divider()),
 ],
 ),
 const SizedBox(height: 25),
+
+// Google
 SizedBox(
 width: double.infinity,
 height: 55,
@@ -397,6 +493,8 @@ label: const Text('Continue with Google'),
 ),
 ),
 const SizedBox(height: 15),
+
+// Facebook
 SizedBox(
 width: double.infinity,
 height: 55,
@@ -407,22 +505,28 @@ label: const Text('Continue with Facebook'),
 ),
 ),
 const SizedBox(height: 25),
+
 Row(
 mainAxisAlignment: MainAxisAlignment.center,
 children: [
 Text(
 'Already have an account?',
 style: TextStyle(
-color:
-Theme.of(context).textTheme.bodyMedium?.color,
+color: Theme.of(context)
+    .textTheme
+    .bodyMedium
+    ?.color,
 ),
 ),
 TextButton(
-onPressed: () {
+onPressed: isLoading
+? null
+    : () {
 Navigator.pushReplacement(
 context,
 MaterialPageRoute(
-builder: (context) => const SigninPage(),
+builder: (context) =>
+const SigninPage(),
 ),
 );
 },
