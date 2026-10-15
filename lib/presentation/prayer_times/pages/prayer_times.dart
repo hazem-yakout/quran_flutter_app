@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
@@ -6,6 +5,7 @@ import 'dart:ui';
 import 'package:adhan/adhan.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:quran/presentation/prayer_times/services/prayer_notification_service.dart';
 
 class PrayerTimesPage extends StatefulWidget {
@@ -16,6 +16,14 @@ class PrayerTimesPage extends StatefulWidget {
 }
 
 class _PrayerTimesPageState extends State<PrayerTimesPage> {
+  final GetStorage _storage = GetStorage();
+
+  static const String _countryKey = 'prayer_selected_country';
+  static const String _cityNameKey = 'prayer_selected_city_name';
+  static const String _cityLatitudeKey = 'prayer_selected_city_latitude';
+  static const String _cityLongitudeKey = 'prayer_selected_city_longitude';
+  static const String _notificationsKey = 'prayer_notifications_enabled';
+
   List<_PrayerCity> allCities = [];
   List<String> countries = [];
 
@@ -83,12 +91,29 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     super.dispose();
   }
 
+  Future<void> _saveLocationPreferences() async {
+    final country = selectedCountry;
+    final city = selectedCity;
+
+    if (country == null || city == null) return;
+
+    await _storage.write(_countryKey, country);
+    await _storage.write(_cityNameKey, city.name);
+    await _storage.write(_cityLatitudeKey, city.latitude);
+    await _storage.write(_cityLongitudeKey, city.longitude);
+  }
+
+  Future<void> _saveNotificationPreference(bool enabled) async {
+    await _storage.write(_notificationsKey, enabled);
+  }
+
   Future<void> _loadCities() async {
     try {
       final jsonString =
       await rootBundle.loadString('assets/data/prayer_cities.json');
 
       final decoded = jsonDecode(jsonString);
+
       if (decoded is! List) {
         throw const FormatException('JSON must contain a list of cities.');
       }
@@ -142,21 +167,76 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           .toList()
         ..sort();
 
+      // Restore previously saved settings.
+      final savedCountry =
+      _storage.read<String>(_countryKey);
+
+      final savedCityName =
+      _storage.read<String>(_cityNameKey);
+
+      final savedLatitude =
+      _storage.read<dynamic>(_cityLatitudeKey);
+
+      final savedLongitude =
+      _storage.read<dynamic>(_cityLongitudeKey);
+
+      final savedNotifications =
+      _storage.read<dynamic>(_notificationsKey);
+
+      final latitude = savedLatitude == null
+          ? null
+          : double.tryParse(savedLatitude.toString());
+
+      final longitude = savedLongitude == null
+          ? null
+          : double.tryParse(savedLongitude.toString());
+
+      // Keep the saved country if it still exists.
+      String? restoredCountry;
+
+      if (savedCountry != null &&
+          uniqueCountries.contains(savedCountry)) {
+        restoredCountry = savedCountry;
+      } else if (uniqueCountries.contains('EG')) {
+        restoredCountry = 'EG';
+      } else if (uniqueCountries.isNotEmpty) {
+        restoredCountry = uniqueCountries.first;
+      }
+
+      final countryCities = loadedCities
+          .where((city) => city.country == restoredCountry)
+          .toList();
+
+      _PrayerCity? restoredCity;
+
+      // Match by name and coordinates to handle duplicate city names.
+      if (savedCityName != null &&
+          latitude != null &&
+          longitude != null) {
+        for (final city in countryCities) {
+          if (city.name == savedCityName &&
+              (city.latitude - latitude).abs() < 0.000001 &&
+              (city.longitude - longitude).abs() < 0.000001) {
+            restoredCity = city;
+            break;
+          }
+        }
+      }
+
+      restoredCity ??=
+      countryCities.isEmpty ? null : countryCities.first;
+
+      final restoredNotifications =
+      savedNotifications is bool ? savedNotifications : true;
+
       if (!mounted) return;
 
       setState(() {
         allCities = loadedCities;
         countries = uniqueCountries;
-
-        if (countries.contains('EG')) {
-          selectedCountry = 'EG';
-        } else if (countries.isNotEmpty) {
-          selectedCountry = countries.first;
-        }
-
-        final cities = _filteredCities;
-        selectedCity = cities.isEmpty ? null : cities.first;
-
+        selectedCountry = restoredCountry;
+        selectedCity = restoredCity;
+        notificationsEnabled = restoredNotifications;
         isLoading = false;
 
         if (allCities.isEmpty) {
@@ -165,8 +245,15 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         }
       });
 
-      if (selectedCity != null && notificationsEnabled) {
+      // Save defaults only if there were no valid saved settings.
+      await _saveLocationPreferences();
+
+      if (notificationsEnabled && selectedCity != null) {
         await _scheduleNotifications(selectedCity!);
+      } else {
+        // Keep audio alarms cancelled if notifications were disabled.
+        await PrayerNotificationService.instance
+            .cancelPrayerNotifications();
       }
     } catch (e) {
       if (!mounted) return;
@@ -176,6 +263,8 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         errorMessage =
         'Could not load cities. Check prayer_cities.json and pubspec.yaml.';
       });
+
+      debugPrint('PrayerTimesPage: Failed to load cities: $e');
     }
   }
 
@@ -192,6 +281,8 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         notificationMessage = 'Prayer notifications scheduled.';
       });
     } catch (e) {
+      debugPrint('Prayer notification scheduling failed: $e');
+
       if (!mounted) return;
 
       setState(() {
@@ -242,9 +333,8 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     if (selectedCity == null) return null;
 
     final todayPrayers = _getPrayerList(now);
-    final upcoming = todayPrayers.where(
-          (prayer) => prayer.time.isAfter(now),
-    );
+    final upcoming =
+    todayPrayers.where((prayer) => prayer.time.isAfter(now));
 
     if (upcoming.isNotEmpty) return upcoming.first;
 
@@ -291,6 +381,8 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
       notificationMessage = null;
     });
 
+    await _saveLocationPreferences();
+
     if (notificationsEnabled) {
       await _scheduleNotifications(city);
     }
@@ -302,12 +394,13 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
       notificationMessage = null;
     });
 
+    await _saveNotificationPreference(enabled);
+
     try {
       if (enabled && selectedCity != null) {
         await _scheduleNotifications(selectedCity!);
       } else {
-        await PrayerNotificationService.instance
-            .cancelPrayerNotifications();
+        await PrayerNotificationService.instance.cancelPrayerNotifications();
 
         if (!mounted) return;
 
@@ -315,7 +408,9 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           notificationMessage = 'Prayer notifications disabled.';
         });
       }
-    } catch (_) {
+    } catch (e) {
+      debugPrint('Failed to update prayer notifications: $e');
+
       if (!mounted) return;
 
       setState(() {
@@ -327,9 +422,8 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   Future<void> _changeCountry(String? country) async {
     if (country == null) return;
 
-    final cities = allCities
-        .where((city) => city.country == country)
-        .toList();
+    final cities =
+    allCities.where((city) => city.country == country).toList();
 
     setState(() {
       selectedCountry = country;
@@ -337,11 +431,12 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
       notificationMessage = null;
     });
 
+    await _saveLocationPreferences();
+
     if (selectedCity != null && notificationsEnabled) {
       await _scheduleNotifications(selectedCity!);
-    } else if (cities.isEmpty) {
-      await PrayerNotificationService.instance
-          .cancelPrayerNotifications();
+    } else if (cities.isEmpty || !notificationsEnabled) {
+      await PrayerNotificationService.instance.cancelPrayerNotifications();
     }
   }
 
@@ -713,10 +808,16 @@ class _CitySearchSheetState extends State<_CitySearchSheet> {
           left: 16,
           right: 16,
           top: 20,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+          bottom: MediaQuery
+              .of(context)
+              .viewInsets
+              .bottom + 16,
         ),
         child: SizedBox(
-          height: MediaQuery.of(context).size.height * 0.72,
+          height: MediaQuery
+              .of(context)
+              .size
+              .height * 0.72,
           child: Column(
             children: [
               const Text(
@@ -765,4 +866,5 @@ class _CitySearchSheetState extends State<_CitySearchSheet> {
       ),
     );
   }
+
 }

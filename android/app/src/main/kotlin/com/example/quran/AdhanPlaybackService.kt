@@ -1,4 +1,3 @@
-
 package com.example.quran
 
 import android.app.Notification
@@ -31,17 +30,19 @@ class AdhanPlaybackService : Service() {
         flags: Int,
         startId: Int
     ): Int {
-        startForeground(
-            NOTIFICATION_ID,
-            createNotification(),
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
-            } else {
-                0
-            }
-        )
-
         try {
+            val notification = createNotification()
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                startForeground(
+                    NOTIFICATION_ID,
+                    notification,
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                )
+            } else {
+                startForeground(NOTIFICATION_ID, notification)
+            }
+
             mediaPlayer?.release()
             mediaPlayer = MediaPlayer.create(this, R.raw.adhan)
 
@@ -63,6 +64,11 @@ class AdhanPlaybackService : Service() {
 
             player.start()
         } catch (e: Exception) {
+            android.util.Log.e(
+                "AdhanPlaybackService",
+                "Failed to start adhan playback",
+                e
+            )
             stopSelf()
         }
 
@@ -75,9 +81,9 @@ class AdhanPlaybackService : Service() {
                 CHANNEL_ID,
                 "الأذان",
                 NotificationManager.IMPORTANCE_LOW
-            )
-
-            channel.description = "تشغيل الأذان عند دخول وقت الصلاة"
+            ).apply {
+                description = "تشغيل الأذان عند دخول وقت الصلاة"
+            }
 
             val manager = getSystemService(
                 Context.NOTIFICATION_SERVICE

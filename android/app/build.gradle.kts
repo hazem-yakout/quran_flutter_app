@@ -41,6 +41,7 @@ kotlin {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
+    implementation("com.batoulapps.adhan:adhan:1.2.1")
 }
 
 flutter {

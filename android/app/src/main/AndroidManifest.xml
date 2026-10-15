@@ -1,13 +1,11 @@
+
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Internet -->
     <uses-permission android:name="android.permission.INTERNET" />
 
-    <!-- Qibla: Location permissions -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
-    <!-- Notifications and Adhan -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
@@ -69,7 +67,7 @@
 
         </activity>
 
-        <!-- Service that plays the full adhan audio -->
+        <!-- Full adhan audio service -->
         <service
             android:name=".AdhanPlaybackService"
             android:exported="false"
@@ -81,7 +79,7 @@
             android:enabled="true"
             android:exported="false" />
 
-        <!-- Restores prayer alarms after reboot or app update -->
+        <!-- Restores schedule after reboot or app update -->
         <receiver
             android:name=".AdhanBootReceiver"
             android:enabled="true"
@@ -93,6 +91,12 @@
             </intent-filter>
 
         </receiver>
+
+        <!-- Refreshes future prayer times -->
+        <receiver
+            android:name=".AdhanScheduleRefreshReceiver"
+            android:enabled="true"
+            android:exported="false" />
 
         <meta-data
             android:name="flutterEmbedding"
@@ -108,4 +112,3 @@
     </queries>
 
 </manifest>
-

@@ -1,6 +1,6 @@
+
 package com.example.quran
 
-import android.content.Context
 import android.content.Intent
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -9,8 +9,6 @@ import io.flutter.plugin.common.MethodChannel
 class MainActivity : FlutterActivity() {
 
     private val channelName = "com.example.quran/adhan"
-    private val prefsName = "adhan_preferences"
-    private val timesKey = "adhan_times"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -22,72 +20,41 @@ class MainActivity : FlutterActivity() {
 
             when (call.method) {
                 "scheduleAdhan" -> {
-                    val times = call.argument<List<Number>>("times")
+                    val latitude = call.argument<Number>("latitude")
+                    val longitude = call.argument<Number>("longitude")
 
-                    if (times == null) {
+                    if (latitude == null || longitude == null) {
                         result.error(
-                            "INVALID_TIMES",
-                            "Missing prayer timestamps",
+                            "INVALID_COORDINATES",
+                            "Latitude and longitude are required.",
                             null
                         )
-                        return@setMethodCallHandler
+                    } else {
+                        try {
+                            val count = PrayerScheduleManager.schedule(
+                                applicationContext,
+                                latitude.toDouble(),
+                                longitude.toDouble()
+                            )
+                            result.success(count)
+                        } catch (exception: Exception) {
+                            result.error(
+                                "SCHEDULE_FAILED",
+                                exception.message,
+                                null
+                            )
+                        }
                     }
-
-                    val prefs = getSharedPreferences(
-                        prefsName,
-                        Context.MODE_PRIVATE
-                    )
-
-                    // Cancel all previously scheduled adhan alarms.
-                    val oldTimes = prefs.getStringSet(
-                        timesKey,
-                        emptySet()
-                    )?.mapNotNull { it.toLongOrNull() }.orEmpty()
-
-                    oldTimes.forEach { timestamp ->
-                        AdhanAlarmReceiver.cancel(this, timestamp)
-                    }
-
-                    // Keep only future prayer times.
-                    val futureTimes = times
-                        .map { it.toLong() }
-                        .filter { it > System.currentTimeMillis() }
-                        .distinct()
-
-                    // Schedule the new alarms.
-                    futureTimes.forEach { timestamp ->
-                        AdhanAlarmReceiver.schedule(this, timestamp)
-                    }
-
-                    prefs.edit()
-                        .putStringSet(
-                            timesKey,
-                            futureTimes.map { it.toString() }.toSet()
-                        )
-                        .apply()
-
-                    result.success(futureTimes.size)
                 }
 
                 "cancelAdhan" -> {
-                    val prefs = getSharedPreferences(
-                        prefsName,
-                        Context.MODE_PRIVATE
-                    )
-
-                    val scheduledTimes = prefs.getStringSet(
-                        timesKey,
-                        emptySet()
-                    )?.mapNotNull { it.toLongOrNull() }.orEmpty()
-
-                    scheduledTimes.forEach { timestamp ->
-                        AdhanAlarmReceiver.cancel(this, timestamp)
-                    }
-
-                    prefs.edit().remove(timesKey).apply()
+                    PrayerScheduleManager.cancelAll(applicationContext)
 
                     stopService(
-                        Intent(this, AdhanPlaybackService::class.java)
+                        Intent(
+                            applicationContext,
+                            AdhanPlaybackService::class.java
+                        )
                     )
 
                     result.success(true)
