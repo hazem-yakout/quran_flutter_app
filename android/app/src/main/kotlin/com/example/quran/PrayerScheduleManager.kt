@@ -1,4 +1,3 @@
-
 package com.example.quran
 
 import android.app.AlarmManager
@@ -6,11 +5,13 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+
 import com.batoulapps.adhan.CalculationMethod
 import com.batoulapps.adhan.Coordinates
-import com.batoulapps.adhan.DateComponents
 import com.batoulapps.adhan.Madhab
 import com.batoulapps.adhan.PrayerTimes
+import com.batoulapps.adhan.data.DateComponents
+
 import java.util.Calendar
 
 object PrayerScheduleManager {
@@ -34,8 +35,12 @@ object PrayerScheduleManager {
         latitude: Double,
         longitude: Double
     ): Int {
-        require(latitude in -90.0..90.0) { "Invalid latitude" }
-        require(longitude in -180.0..180.0) { "Invalid longitude" }
+        require(latitude in -90.0..90.0) {
+            "Invalid latitude"
+        }
+        require(longitude in -180.0..180.0) {
+            "Invalid longitude"
+        }
 
         val prefs = preferences(context)
 
@@ -66,7 +71,11 @@ object PrayerScheduleManager {
                 calendar.get(Calendar.DAY_OF_MONTH)
             )
 
-            val prayerTimes = PrayerTimes(coordinates, date, parameters)
+            val prayerTimes = PrayerTimes(
+                coordinates,
+                date,
+                parameters
+            )
 
             val todayTimes = listOf(
                 prayerTimes.fajr,
@@ -77,7 +86,7 @@ object PrayerScheduleManager {
             )
 
             for (prayerTime in todayTimes) {
-                val timestamp = prayerTime.time
+                val timestamp = prayerTime?.time ?: continue
 
                 if (timestamp > now) {
                     AdhanAlarmReceiver.schedule(context, timestamp)
@@ -127,8 +136,11 @@ object PrayerScheduleManager {
 
     private fun cancelPrayerAlarms(context: Context) {
         val prefs = preferences(context)
-        val oldTimes = prefs.getStringSet(KEY_TIMES, emptySet())
-            ?.toSet() ?: emptySet()
+
+        val oldTimes = prefs.getStringSet(
+            KEY_TIMES,
+            emptySet()
+        )?.toSet() ?: emptySet()
 
         oldTimes.forEach { value ->
             value.toLongOrNull()?.let { timestamp ->
@@ -136,12 +148,15 @@ object PrayerScheduleManager {
             }
         }
 
-        prefs.edit().remove(KEY_TIMES).apply()
+        prefs.edit()
+            .remove(KEY_TIMES)
+            .apply()
     }
 
     private fun scheduleRefreshAlarm(context: Context) {
-        val alarmManager =
-            context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val alarmManager = context.getSystemService(
+            Context.ALARM_SERVICE
+        ) as AlarmManager
 
         val intent = Intent(
             context,
@@ -159,21 +174,13 @@ object PrayerScheduleManager {
         val triggerAt = System.currentTimeMillis() +
                 REFRESH_AFTER_DAYS * 24L * 60L * 60L * 1000L
 
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                alarmManager.setAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    triggerAt,
-                    pendingIntent
-                )
-            } else {
-                alarmManager.set(
-                    AlarmManager.RTC_WAKEUP,
-                    triggerAt,
-                    pendingIntent
-                )
-            }
-        } catch (exception: SecurityException) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            alarmManager.setAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                triggerAt,
+                pendingIntent
+            )
+        } else {
             alarmManager.set(
                 AlarmManager.RTC_WAKEUP,
                 triggerAt,
@@ -183,8 +190,9 @@ object PrayerScheduleManager {
     }
 
     private fun cancelRefreshAlarm(context: Context) {
-        val alarmManager =
-            context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val alarmManager = context.getSystemService(
+            Context.ALARM_SERVICE
+        ) as AlarmManager
 
         val intent = Intent(
             context,
