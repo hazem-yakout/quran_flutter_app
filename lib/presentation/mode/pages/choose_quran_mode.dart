@@ -1,13 +1,15 @@
+
 import 'package:flutter/material.dart';
 
 import 'package:quran/presentation/choose_reciter/pages/choose_reciter.dart';
 import 'package:quran/presentation/quran_reader/pages/quran_reader_page.dart';
+import 'package:quran/presentation/islamic_home/pages/islamic_home_page.dart';
 
 class ChooseQuranModePage extends StatelessWidget {
   const ChooseQuranModePage({super.key});
 
   void openReading(BuildContext context) {
-    Navigator.pushReplacement(
+    Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => const QuranReaderPage(),
@@ -16,10 +18,19 @@ class ChooseQuranModePage extends StatelessWidget {
   }
 
   void openListening(BuildContext context) {
-    Navigator.pushReplacement(
+    Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => const ChooseReciterPage(),
+      ),
+    );
+  }
+
+  void openIslamicMode(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const IslamicHomePage(),
       ),
     );
   }
@@ -28,11 +39,13 @@ class ChooseQuranModePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final green = isDark ? Colors.greenAccent : Colors.green.shade700;
+
+    final green =
+    isDark ? Colors.greenAccent : Colors.green.shade700;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Choose Quran Mode'),
+        title: const Text('Choose Your Mode'),
         centerTitle: true,
         automaticallyImplyLeading: false,
       ),
@@ -44,7 +57,7 @@ class ChooseQuranModePage extends StatelessWidget {
               const SizedBox(height: 25),
 
               Icon(
-                Icons.menu_book_rounded,
+                Icons.auto_awesome_rounded,
                 size: 80,
                 color: green,
               ),
@@ -52,7 +65,7 @@ class ChooseQuranModePage extends StatelessWidget {
               const SizedBox(height: 20),
 
               Text(
-                'How would you like to enjoy the Quran?',
+                'Welcome to Your Islamic Companion',
                 textAlign: TextAlign.center,
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
@@ -62,7 +75,7 @@ class ChooseQuranModePage extends StatelessWidget {
               const SizedBox(height: 12),
 
               Text(
-                'Choose reading or listening. You can switch modes later.',
+                'Choose how you would like to explore.',
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyLarge,
               ),
@@ -87,6 +100,18 @@ class ChooseQuranModePage extends StatelessWidget {
                 'Choose your favorite reciter and listen to Quran surahs.',
                 color: green,
                 onTap: () => openListening(context),
+              ),
+
+              const SizedBox(height: 20),
+
+              _ModeCard(
+                icon: Icons.mosque_rounded,
+                title: 'Islamic Mode',
+                description:
+                'Prayer times, Qibla, Adhkar, Duas, Tasbih, Hadith, '
+                    'Prophets stories, Allah names, Zakat, and Islamic calendar.',
+                color: green,
+                onTap: () => openIslamicMode(context),
               ),
 
               const SizedBox(height: 25),
@@ -168,6 +193,8 @@ class _ModeCard extends StatelessWidget {
                   ],
                 ),
               ),
+
+              const SizedBox(width: 8),
 
               Icon(
                 Icons.arrow_forward_ios_rounded,

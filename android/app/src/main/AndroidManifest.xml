@@ -1,6 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Internet -->
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Qibla: Location permissions -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <!-- Notifications and Adhan -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
@@ -74,7 +81,7 @@
             android:enabled="true"
             android:exported="false" />
 
-        <!-- Restores prayer alarms after device reboot or app update -->
+        <!-- Restores prayer alarms after reboot or app update -->
         <receiver
             android:name=".AdhanBootReceiver"
             android:enabled="true"
@@ -101,3 +108,4 @@
     </queries>
 
 </manifest>
+

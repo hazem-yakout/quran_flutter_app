@@ -48,13 +48,19 @@ class GetStartedPage extends StatelessWidget {
 
                 const Spacer(),
 
-                const Text(
-                  'Enjoy Reading & Listening El-Quran EL-Kareem',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    fontSize: 16,
-                  ),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Text(
+                      'Enjoy Reading & Listening El-Quran EL-Kareem',
+                      textAlign: TextAlign.center,
+                      softWrap: true,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontSize: (constraints.maxWidth * 0.045).clamp(12.0, 16.0),
+                      ),
+                    );
+                  },
                 ),
 
                 const SizedBox(height: 21),
